@@ -10,19 +10,29 @@ export async function getCabins() {
   return data;
 }
 
-export async function createCabin(newCabin) {
+export async function createEditCabin(newCabin, id) {
   //https://uvpmxsfrgstonudrdzzr.supabase.co/storage/v1/object/public/cabin-images/cabin-001.jpg
+
+  const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
 
   //generate a unique image name to avoid conflicts, and if the name was / supabase will create a folder and i don't want that
   const imageName = `${Math.random()}-${newCabin.image.name}`.replace("/", "");
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+  const imagePath = hasImagePath
+    ? newCabin.image
+    : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
 
   //1- create the cabin
+  let query = supabase.from("cabins");
+
+  //* A- CREATE
   //this only works,insert([newCabin]), because in our create cabin form the field names match the column names in the supabase
-  const { data, error } = await supabase
-    .from("cabins")
-    .insert([{ ...newCabin, image: imagePath }])
-    .select();
+  if (!id) query = query.insert([{ ...newCabin, image: imagePath }]);
+
+  //* B- EDIT
+  if (id) query = query.update({ ...newCabin, image: imagePath }).eq("id", id);
+
+  const { data, error } = await query.select().single();
+
   if (error) {
     console.error(error);
     throw new Error("Cabin could not be created");
