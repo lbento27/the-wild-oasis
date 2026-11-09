@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createEditCabin } from "../../services/apiCabins";
-import { toast } from "react-hot-toast";
+import { useCreateCabin } from "./useCreateCabin";
+import { useEditCabin } from "./useEditCabin";
 
 import Input from "../../ui/Input";
 import Form from "../../ui/Form";
@@ -20,31 +19,8 @@ function CreateCabinForm({ cabinToEdit = {} }) {
   });
   const { errors } = formState;
 
-  const queryClient = useQueryClient();
-
-  const { mutate: createCabin, isLoading: isCreating } = useMutation({
-    mutationFn: (newCabin) => createEditCabin(newCabin),
-    onSuccess: () => {
-      toast.success("New cabin successfully created");
-      queryClient.invalidateQueries({ queryKey: ["cabins"] });
-      reset(); //from react-hook-form reset
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
-
-  const { mutate: editCabin, isLoading: isEditing } = useMutation({
-    mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id),
-    onSuccess: () => {
-      toast.success("Cabin successfully edited");
-      queryClient.invalidateQueries({ queryKey: ["cabins"] });
-      reset(); //from react-hook-form reset
-    },
-    onError: (err) => {
-      toast.error(err.message);
-    },
-  });
+  const { createCabin, isCreating } = useCreateCabin(); //custom hook
+  const { editCabin, isEditing } = useEditCabin(); //custom hook
 
   const isWorking = isCreating || isEditing;
 
@@ -52,8 +28,26 @@ function CreateCabinForm({ cabinToEdit = {} }) {
     const image = typeof data.image === "string" ? data.image : data.image[0];
 
     if (isEditSession)
-      editCabin({ newCabinData: { ...data, image: image }, id: editId });
-    else createCabin({ ...data, image: image });
+      editCabin(
+        { newCabinData: { ...data, image: image }, id: editId },
+        {
+          //in here we also have access to the onSuccess and onError callbacks for the mutation, also we have access to the data returned from the mutation
+          onSuccess: (data) => {
+            console.log(data);
+            reset();
+          },
+        },
+      );
+    else
+      createCabin(
+        { ...data, image: image },
+        {
+          onSuccess: (data) => {
+            console.log(data);
+            reset();
+          },
+        },
+      );
   }
 
   function onError(errors) {
@@ -114,7 +108,6 @@ function CreateCabinForm({ cabinToEdit = {} }) {
 
       <FormRow
         label="Description for website"
-        disabled={isWorking}
         error={errors?.description?.message}
       >
         <Textarea
