@@ -40,6 +40,8 @@ export async function createEditCabin(newCabin, id) {
 
   //2- upload the image
   //don't forget to enable RLS (Row Level Security) for the storage bucket in Supabase settings
+  if (hasImagePath) return data;
+
   const { error: storageError } = await supabase.storage
     .from("cabin-images")
     .upload(imageName, newCabin.image);
