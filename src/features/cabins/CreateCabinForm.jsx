@@ -9,7 +9,7 @@ import FileInput from "../../ui/FileInput";
 import Textarea from "../../ui/Textarea";
 import FormRow from "../../ui/FormRow";
 
-function CreateCabinForm({ cabinToEdit = {} }) {
+function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
   const { id: editId, ...editValues } = cabinToEdit;
   //now if its a edit session to put the default values in the form fields
   const isEditSession = Boolean(editId);
@@ -45,6 +45,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
           onSuccess: (data) => {
             console.log(data);
             reset();
+            onCloseModal?.(); //we use optional chaining to safely call the function if it exists
           },
         },
       );
@@ -56,7 +57,10 @@ function CreateCabinForm({ cabinToEdit = {} }) {
 
   return (
     //when the form is submitted, handleSubmit will call onSubmit if validation passes, or onError if validation fails
-    <Form onSubmit={handleSubmit(onSubmit, onError)}>
+    <Form
+      onSubmit={handleSubmit(onSubmit, onError)}
+      type={onCloseModal ? "modal" : "regular"}
+    >
       <FormRow label="Cabin name" error={errors?.name?.message}>
         <Input
           type="text"
@@ -130,8 +134,14 @@ function CreateCabinForm({ cabinToEdit = {} }) {
       </FormRow>
 
       <FormRow>
-        {/* type is an HTML attribute! */}
-        <Button variation="secondary" type="reset">
+        {/* type is an HTML attribute! 
+          the button onClick will trigger the onCloseModal function to close the modal, and because it is reused in different contexts, we use the optional chaining operator to safely call it if it exists.
+        */}
+        <Button
+          variation="secondary"
+          type="reset"
+          onClick={() => onCloseModal?.()}
+        >
           Cancel
         </Button>
         <Button disabled={isWorking}>
