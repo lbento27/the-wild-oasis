@@ -1,16 +1,8 @@
-import {
-  cloneElement,
-  createContext,
-  useState,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
-
+import { cloneElement, createContext, useState, useContext } from "react";
 import { createPortal } from "react-dom";
-
 import styled from "styled-components";
 import { HiXMark } from "react-icons/hi2";
+import { useOutsideClick } from "../hooks/useOutsideClick";
 
 const StyledModal = styled.div`
   position: fixed;
@@ -89,27 +81,8 @@ function Window({ children, name }) {
   const { openName, close } = useContext(ModalContext);
 
   //add the ability to close the modal when clicking outside of it
-  const ref = useRef();
-
-  useEffect(
-    function () {
-      function handleClick(e) {
-        //if the ref.current exists and the click target is outside of it e.target, close the modal
-        if (ref.current && !ref.current.contains(e.target)) {
-          //console.log("Clicked outside modal");
-          close();
-        }
-      }
-
-      //use capture phase to ensure the click is detected before it reaches other elements, this is the 3 argument in addEventListener (true for capture phase), the other way around would be for bubbling phase and the Modal will open and close immediately
-      document.addEventListener("click", handleClick, true);
-
-      return () => document.removeEventListener("click", handleClick, true);
-    },
-    [close],
-  );
-  // end of useEffect for handling outside clicks
-
+  const ref = useOutsideClick(close);
+  //
   if (name !== openName) return null;
 
   return createPortal(
