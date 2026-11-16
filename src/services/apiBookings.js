@@ -12,8 +12,15 @@ export async function getBookings({ filter, sortBy }) {
   //Filter
   //see useBookings for how the filter object is structured
   //if (filter !== null) query = query.eq(filter.field, filter.value);
-  if (filter !== null)
-    query = query[filter.method || "eq"](filter.field, filter.value);
+  if (filter) query = query[filter.method || "eq"](filter.field, filter.value);
+
+  //SORT
+  //these eq, order etc methods came from supabase, see docs
+  //the second argument to order accepts an object with true for ascending and false for descending
+  if (sortBy)
+    query = query.order(sortBy.field, {
+      ascending: sortBy.direction === "asc",
+    });
 
   const { data, error } = await query;
 
