@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import CabinRow from "./CabinRow";
 import Spinner from "../../ui/Spinner";
+import Empty from "../../ui/Empty";
 import Table from "../../ui/Table";
 
 import Menus from "../../ui/Menus";
@@ -12,6 +13,7 @@ function CabinTable() {
   const [searchParams] = useSearchParams();
 
   if (isLoading) return <Spinner />;
+  if (!cabins.length) return <Empty resourceName="cabins" />;
 
   //1- FILTER
   //get the discount filter from the url
