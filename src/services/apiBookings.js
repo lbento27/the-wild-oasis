@@ -1,20 +1,25 @@
 import { getToday } from "../utils/helpers";
 import supabase from "./supabase";
 
+import { PAGE_SIZE } from "../utils/constants";
+
+//the second argument {count: "exact"} tells supabase to return the exact count of rows matching the query, in this case we use in the pagination component, we can calculate in other way but this is to test the functionality of supabase
+
 //this time filter bookings on the api instead of in the frontend
-export async function getBookings({ filter, sortBy }) {
+export async function getBookings({ filter, sortBy, page }) {
   let query = supabase
     .from("bookings")
     .select(
       "id, created_at, startDate, endDate, numNights, numGuests, status, totalPrice, cabins(name), guests(fullName, email)",
+      { count: "exact" },
     );
 
-  //Filter
+  //*FILTER
   //see useBookings for how the filter object is structured
   //if (filter !== null) query = query.eq(filter.field, filter.value);
   if (filter) query = query[filter.method || "eq"](filter.field, filter.value);
 
-  //SORT
+  //*SORT
   //these eq, order etc methods came from supabase, see docs
   //the second argument to order accepts an object with true for ascending and false for descending
   if (sortBy)
@@ -22,14 +27,22 @@ export async function getBookings({ filter, sortBy }) {
       ascending: sortBy.direction === "asc",
     });
 
-  const { data, error } = await query;
+  //*PAGINATION
+  if (page) {
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error(error);
     throw new Error("Bookings could not be loaded");
   }
 
-  return data;
+  return { data, count };
 }
 
 export async function getBooking(id) {
