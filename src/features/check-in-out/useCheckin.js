@@ -9,8 +9,18 @@ export function useCheckin() {
   const navigate = useNavigate();
 
   const { mutate: checkin, isLoading: isCheckingIn } = useMutation({
-    mutationFn: (bookingId) =>
-      updateBooking(bookingId, { status: "checked-in", isPaid: true }),
+    mutationFn: ({ bookingId, breakfast }) =>
+      updateBooking(bookingId, {
+        status: "checked-in",
+        isPaid: true,
+        ...breakfast,
+        //spread this properties from checkinBooking component via the breakfast object
+        //breakfast: {
+        //   hasBreakfast: true,
+        //   extrasPrice: optionalBreakfastPrice,
+        //   totalPrice: totalPrice + optionalBreakfastPrice,
+        // },
+      }),
 
     //the data bellow is returned from the mutation function
     onSuccess: (data) => {
