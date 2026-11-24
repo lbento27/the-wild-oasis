@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { login } from "../../services/apiAuth";
+
 import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import Input from "../../ui/Input";
@@ -8,7 +10,16 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleSubmit() {}
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!email || !password) {
+      return;
+    }
+
+    //need to move to custom hook, only for testing purposes now, this saves an authenticated token in localStorage
+    login({ email, password });
+  }
 
   return (
     <Form onSubmit={handleSubmit}>
