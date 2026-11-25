@@ -14,7 +14,7 @@ export function useLogin() {
     onSuccess: (user) => {
       //this allows us to manually set some data into the react query cache
       //don´t really need this, but it is good practice when login to not refetch the user data again
-      queryClient.setQueryData(["user"], user);
+      queryClient.setQueryData(["user"], user.user);
 
       //console.log(user);
       navigate("/dashboard", { replace: true });
